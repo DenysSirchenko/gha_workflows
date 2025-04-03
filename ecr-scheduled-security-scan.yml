@@ -1,0 +1,30 @@
+name: ECR vulnerability detection
+
+on:
+    workflow_call:
+      inputs:
+        runs-on:
+          default: ubuntu-latest
+          required: false
+          type: string
+        image_url:
+          required: true
+          type: string
+
+jobs:
+  notification:
+    runs-on: ${{ inputs.runs-on }}
+    steps:
+        - name: Scan Docker image with Trufflehog
+          continue-on-error: false
+          run: |
+            docker run --rm trufflesecurity/trufflehog:latest docker --image ${{ inputs.image_url }} --only-verified
+    
+        - name: Scan Docker image with Trivy
+          uses: aquasecurity/trivy-action@0.28.0
+          with:
+            image-ref: "${{ inputs.image_url }}"
+            exit-code: '1'
+            severity: 'LOW,MEDIUM,HIGH,CRITICAL'
+            ignore-unfixed: true
+
