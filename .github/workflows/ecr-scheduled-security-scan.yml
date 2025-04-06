@@ -32,13 +32,14 @@ jobs:
             -f ${{ inputs.context }}/${{ inputs.dockerfile }} .
 
       - name: Scan Docker image with Trufflehog
+        continue-on-error: false
         run: |
           docker run --rm trufflesecurity/trufflehog:latest docker \
             --image spryker/php:${{ inputs.tag }} \
             --only-verified
 
       - name: Scan Docker image with Trivy
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@0.30.0
         with:
           image-ref: "spryker/php:${{ inputs.tag }}"
           exit-code: '1'
