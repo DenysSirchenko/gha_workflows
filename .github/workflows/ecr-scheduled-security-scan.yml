@@ -28,19 +28,19 @@ jobs:
         run: |
           docker build \
             --platform ${{ inputs.platforms }} \
-            -t local/php:${{ inputs.tag }} \
+            -t spryker/php:${{ inputs.tag }} \
             -f ${{ inputs.context }}/${{ inputs.dockerfile }} .
 
       - name: Scan Docker image with Trufflehog
         run: |
           docker run --rm trufflesecurity/trufflehog:latest docker \
-            --image local/php:${{ inputs.tag }} \
+            --image spryker/php:${{ inputs.tag }} \
             --only-verified
 
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: "local/php:${{ inputs.tag }}"
+          image-ref: "spryker/php:${{ inputs.tag }}"
           exit-code: '1'
           severity: 'LOW,MEDIUM,HIGH,CRITICAL'
           ignore-unfixed: true
