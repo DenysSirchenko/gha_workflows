@@ -9,7 +9,7 @@ on:
       dockerfile:
         required: true
         type: string
-      tag:
+      image:
         required: true
         type: string
       platforms:
@@ -28,25 +28,25 @@ jobs:
         run: |
           docker build \
             --platform ${{ inputs.platforms }} \
-            -t ${{ inputs.tag }} \
+            -t ${{ inputs.image }} \
             -f ${{ inputs.context }}/${{ inputs.dockerfile }} .
 
       - name: Scan Docker image with Trufflehog
         continue-on-error: false
         run: |
           docker run --rm trufflesecurity/trufflehog:latest docker \
-            --image ${{ inputs.tag }} \
+            --image ${{ inputs.image }} \
             --only-verified
 
       - name: Scan Docker image with Trivy
-        if: ${{ !startsWith(inputs.tag, 'spryker/jenkins') && !startsWith(inputs.tag, 'spryker/rabbitmq') }}
+        if: ${{ !startsWith(inputs.image, 'spryker/jenkins') && !startsWith(inputs.image, 'spryker/rabbitmq') }}
         uses: aquasecurity/trivy-action@0.30.0
         with:
-          image-ref: "${{ inputs.tag }}"
+          image-ref: "${{ inputs.image }}"
           exit-code: '1'
           severity: 'LOW,MEDIUM,HIGH,CRITICAL'
           ignore-unfixed: true
 
       - name: Show scan result
         run: |
-          echo "Trivy scan completed for ${{ inputs.tag }}"
+          echo "Trivy scan completed for ${{ inputs.image }}"
