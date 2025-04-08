@@ -39,6 +39,7 @@ jobs:
             --only-verified
 
       - name: Scan Docker image with Trivy
+        if: ${{ !startsWith(inputs.tag, 'spryker/jenkins') && !startsWith(inputs.tag, 'spryker/rabbitmq') }}
         uses: aquasecurity/trivy-action@0.30.0
         with:
           image-ref: "${{ inputs.tag }}"
