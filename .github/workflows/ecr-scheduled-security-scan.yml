@@ -84,7 +84,9 @@ jobs:
         id: status-message
         run: |
           raw='${{ steps.docker-scan.outputs.raw }}'
-          if echo "$raw" | jq -e '.imageScanStatus.description' >/dev/null 2>&1; then
+          if [ -z "$raw" ]; then
+            msg="Scan failed or returned no output."
+          elif echo "$raw" | jq -e '.imageScanStatus.description' >/dev/null 2>&1; then
             msg=$(echo "$raw" | jq -r '.imageScanStatus.description')
           else
             msg="*${{ steps.docker-scan.outputs.total }}* total vulnerabilities"
