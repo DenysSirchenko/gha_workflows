@@ -83,8 +83,9 @@ jobs:
       - name: Prepare Slack status message
         id: status-message
         run: |
-          if [ "${{ steps.docker-scan.outputs.status }}" == "FAILED" ]; then
-            msg="$(echo '${{ steps.docker-scan.outputs.raw }}' | jq -r '.imageScanStatus.description')"
+          raw='${{ steps.docker-scan.outputs.raw }}'
+          if echo "$raw" | jq -e '.imageScanStatus.description' >/dev/null 2>&1; then
+            msg=$(echo "$raw" | jq -r '.imageScanStatus.description')
           else
             msg="*${{ steps.docker-scan.outputs.total }}* total vulnerabilities"
           fi
