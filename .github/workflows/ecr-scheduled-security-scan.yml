@@ -60,15 +60,6 @@ jobs:
           tag: ${{ inputs.tag }}-${{ github.sha }}
         continue-on-error: true
 
-      - name: Debug scan outputs
-        if: always()  # Ensures this runs even if the previous step fails
-        run: |
-          echo "=== Docker Scan Debug ==="
-          echo "Status: '${{ steps.docker-scan.outputs.status }}'"
-          echo "Total Vulnerabilities: '${{ steps.docker-scan.outputs.total }}'"
-          echo "Raw Output:"
-          echo '${{ steps.docker-scan.outputs.raw }}'
-
       - name: Delete images after scan
         run: |
           aws ecr batch-delete-image --repository-name ${{ secrets.AWS_ECR_REPO }} --image-id imageTag="${{ inputs.tag }}-${{ github.sha }}"
@@ -92,15 +83,11 @@ jobs:
       - name: Prepare Slack status message
         id: status-message
         run: |
-          raw='${{ steps.docker-scan.outputs.raw }}'
-          if [ -z "$raw" ]; then
-            msg="Scan failed or returned no output."
-          elif echo "$raw" | jq -e '.imageScanStatus.description' >/dev/null 2>&1; then
-            msg=$(echo "$raw" | jq -r '.imageScanStatus.description')
+          if [ -z "${{ steps.docker-scan.outputs.raw }}" ]; then
+            echo "status_message=No scan output available. Image may not be supported." >> "$GITHUB_OUTPUT"
           else
-            msg="*${{ steps.docker-scan.outputs.total }}* total vulnerabilities"
+            echo "status_message=*${{ steps.docker-scan.outputs.total }}* total vulnerabilities" >> "$GITHUB_OUTPUT"
           fi
-          echo "status_message=$msg" >> "$GITHUB_OUTPUT"
 
       - name: Send GitHub Action trigger data to Slack workflow
         id: slack
