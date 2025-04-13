@@ -80,6 +80,16 @@ jobs:
             echo "color=#ff0000" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Prepare Slack status message
+        id: status-message
+        run: |
+          if [ "${{ steps.docker-scan.outputs.status }}" == "FAILED" ]; then
+            msg="$(echo '${{ steps.docker-scan.outputs.raw }}' | jq -r '.imageScanStatus.description')"
+          else
+            msg="*${{ steps.docker-scan.outputs.total }}* total vulnerabilities"
+          fi
+          echo "status_message=$msg" >> "$GITHUB_OUTPUT"
+
       - name: Send GitHub Action trigger data to Slack workflow
         id: slack
         uses: slackapi/slack-github-action@v2
@@ -95,7 +105,7 @@ jobs:
                     {
                       "title": "Status",
                       "short": true,
-                      "value": "*${{ steps.docker-scan.outputs.total }}* total vulnerabilities"
+                      "value": "${{ steps.status-message.outputs.status_message }}"
                     }
                   ]
                 }
