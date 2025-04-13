@@ -83,7 +83,7 @@ jobs:
       - name: Prepare Slack status message
         id: status-message
         run: |
-          if [ -z "${{ steps.docker-scan.outputs.raw }}" ]; then
+          if [ -z "${{ steps.docker-scan.outputs.total }}" ]; then
             echo "status_message=No scan output available. Image may not be supported." >> "$GITHUB_OUTPUT"
           else
             echo "status_message=*${{ steps.docker-scan.outputs.total }}* total vulnerabilities" >> "$GITHUB_OUTPUT"
