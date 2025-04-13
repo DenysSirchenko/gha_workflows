@@ -60,6 +60,15 @@ jobs:
           tag: ${{ inputs.tag }}-${{ github.sha }}
         continue-on-error: true
 
+      - name: Debug scan outputs
+        if: always()  # Ensures this runs even if the previous step fails
+        run: |
+          echo "=== Docker Scan Debug ==="
+          echo "Status: '${{ steps.docker-scan.outputs.status }}'"
+          echo "Total Vulnerabilities: '${{ steps.docker-scan.outputs.total }}'"
+          echo "Raw Output:"
+          echo '${{ steps.docker-scan.outputs.raw }}'
+
       - name: Delete images after scan
         run: |
           aws ecr batch-delete-image --repository-name ${{ secrets.AWS_ECR_REPO }} --image-id imageTag="${{ inputs.tag }}-${{ github.sha }}"
